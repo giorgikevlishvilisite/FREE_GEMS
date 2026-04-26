@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Orders</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f2f4f8;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .box {
+      background: white;
+      padding: 15px;
+      margin: 10px auto;
+      max-width: 500px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .btn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .clear {
+      background: #ff4d4d;
+      color: white;
+    }
+
+    .clear:hover {
+      background: #e60000;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>All Orders</h1>
+
+<button class="btn clear" onclick="clearOrders()">Clear All Orders</button>
+
+<div id="list"></div>
+
+<script>
+function renderOrders() {
+  let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+  const list = document.getElementById("list");
+
+  if (orders.length === 0) {
+    list.innerHTML = "<p style='text-align:center;'>No orders yet</p>";
+  } else {
+    list.innerHTML = orders.map((o, i) => `
+      <div class="box">
+        <b>Order #${i + 1}</b><br>
+        Email: ${o.email}<br>
+        Class Code: ${o.classCode}<br>
+        Time: ${o.time}
+      </div>
+    `).join("");
+  }
+}
+
+function clearOrders() {
+  if (confirm("Are you sure you want to delete all orders?")) {
+    localStorage.removeItem("orders");
+    renderOrders();
+  }
+}
+
+// initial load
+renderOrders();
+</script>
+
+</body>
+</html>
